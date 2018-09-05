@@ -1,0 +1,76 @@
+---
+title: "Regression Models Course Project"
+author: "Fervallen"
+date: "August 28, 2018"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Overview
+In this assignment we will look at a data set of a collection of cars to explore the relationship between a set of variables and miles per gallon (MPG) (outcome). We are particularly interested in the following two questions:  
+- Is an automatic or manual transmission better for MPG  
+- Quantify the MPG difference between automatic and manual transmissions  
+
+Let's check what data we have for analysis:
+```{r mtcars}
+dim(mtcars)
+head(mtcars)
+mtcars$mpg
+unique(mtcars$am)
+```
+
+We are interested in "mpg" (miles per galon) and "am" (automatic - 0 or manual - 1 transmission) fields. 
+
+## 2. Exploratory data analysis and answer to question "Is an automatic or manual transmission better for MPG?"
+At first - let's check the MPG means for the different transmission types:
+```{r}
+autoMpg <- mtcars[mtcars$am == 0, ]$mpg
+mean(autoMpg)
+manualMpg <- mtcars[mtcars$am == 1, ]$mpg
+mean(manualMpg)
+```
+So, at the first glance it looks like cars with automatic transmission have lower MPG.
+
+Let's draw a boxplot so visualize this data:
+```{r}
+boxplot(mpg ~ am,
+  data = mtcars,
+  names = c('Auto', 'Manual'),
+  ylab = 'Miles Per Galon',
+  col = c('darkolivegreen3', 'deepskyblue3')
+)
+```
+Now we are even more sure, that automatic transmission cars have bigger fuel consumption.
+
+Let's test a hypotesis, that the transmission type does not affect MPG:
+```{r}
+t.test(autoMpg, manualMpg)
+```
+Resulting P-value is really small, so hypotesis needs to be rejected. 
+
+## 3. Building linear models to "Quantify the MPG difference between automatic and manual transmissions"
+For the start let's build a full multivariable model to check how all the variables affect MPG.  
+As many people have suggested we'll use a stepwise approach to find the best model solution:
+```{r}
+stepModel <- step(lm(data = mtcars, mpg ~ .), trace = 0)
+summary(stepModel)
+```
+
+As we see transmission type(am) is quite important, but weight(wt) makes more difference and 1/4 mile time(qsec) has it's impact too.  
+
+In average, choosing automatic transmission drops 2.94 MPG, but the std. error are very big.  
+
+Let's also check how weight and qsec impact MPG with different types of transmission:  
+```{r}
+mpgByAmModel <- lm(mpg ~ factor(am):wt + factor(am):qsec, data = mtcars)
+summary(mpgByAmModel)
+```
+
+So when the weight is increased by 1000 lbs fuel consumption is decreased by 3.18 miles per galon for automatic transmission and by 6.1 miles per galon for cars with manual transmission.  
+When 1/4 mile time is increased by 1 sec fuel consumption is decreased by 0.834 miles per galon for automatic transmission and by 1.446 miles per galon for cars with manual transmission.
