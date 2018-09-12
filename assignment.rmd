@@ -37,15 +37,7 @@ mean(manualMpg)
 ```
 So, at the first glance it looks like cars with automatic transmission have lower MPG.
 
-Let's draw a boxplot so visualize this data:
-```{r}
-boxplot(mpg ~ am,
-  data = mtcars,
-  names = c('Auto', 'Manual'),
-  ylab = 'Miles Per Galon',
-  col = c('darkolivegreen3', 'deepskyblue3')
-)
-```
+You can check the appendix for the boxplot of our data.
 Now we are even more sure, that automatic transmission cars have bigger fuel consumption.
 
 Let's test a hypotesis, that the transmission type does not affect MPG:
@@ -59,9 +51,9 @@ For the start let's build a full multivariable model to check how all the variab
 As many people have suggested we'll use a stepwise approach to find the best model solution:
 ```{r}
 stepModel <- step(lm(data = mtcars, mpg ~ .), trace = 0)
-summary(stepModel)
+summary(stepModel)$coef
 ```
-
+You can check the diagnosis plots in appendix 4.2 (it's quite ok).
 As we see transmission type(am) is quite important, but weight(wt) makes more difference and 1/4 mile time(qsec) has it's impact too.  
 
 In average, choosing automatic transmission drops 2.94 MPG, but the std. error are very big.  
@@ -69,8 +61,27 @@ In average, choosing automatic transmission drops 2.94 MPG, but the std. error a
 Let's also check how weight and qsec impact MPG with different types of transmission:  
 ```{r}
 mpgByAmModel <- lm(mpg ~ factor(am):wt + factor(am):qsec, data = mtcars)
-summary(mpgByAmModel)
+summary(mpgByAmModel)$coef
 ```
 
 So when the weight is increased by 1000 lbs fuel consumption is decreased by 3.18 miles per galon for automatic transmission and by 6.1 miles per galon for cars with manual transmission.  
 When 1/4 mile time is increased by 1 sec fuel consumption is decreased by 0.834 miles per galon for automatic transmission and by 1.446 miles per galon for cars with manual transmission.
+
+## 4. Appendix
+
+### 4.1 MPG by transmission type boxplot:
+```{r}
+boxplot(mpg ~ am,
+  data = mtcars,
+  names = c('Auto', 'Manual'),
+  main = 'MPG by transmission type',
+  ylab = 'Miles Per Galon',
+  col = c('darkolivegreen3', 'deepskyblue3')
+)
+```
+
+### 4.2 Residual plot for diagnostics:
+```{r}
+par(mfrow = c(2,2))
+plot(stepModel)
+```
